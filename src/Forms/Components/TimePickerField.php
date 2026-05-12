@@ -134,11 +134,28 @@ class TimePickerField extends Field
 
     protected function convertTime(string $value, string $fromFormat, string $toFormat): string
     {
+        $value = trim($value);
+
+        // Try the exact expected format first.
         $dt = \DateTime::createFromFormat($fromFormat, $value);
 
+        // Fallback: try common time formats that the legacy DB might have stored.
         if ($dt === false) {
-            // Try a loose parse as a fallback (handles stored H:i:s when format is H:i, etc.)
-            $dt = new \DateTime($value);
+            foreach (['H:i:s', 'H:i', 'G:i:s', 'G:i', 'h:i A', 'h:i a', 'g:i A', 'g:i a'] as $fmt) {
+                $dt = \DateTime::createFromFormat($fmt, $value);
+                if ($dt !== false) {
+                    break;
+                }
+            }
+        }
+
+        // Last resort: let PHP parse it natively (handles e.g. '12:00pm').
+        if ($dt === false) {
+            try {
+                $dt = new \DateTime($value);
+            } catch (\Throwable $e) {
+                return $value;
+            }
         }
 
         return $dt->format($toFormat);
