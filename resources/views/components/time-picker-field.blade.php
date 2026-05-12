@@ -17,12 +17,13 @@
             x-data="{
                 state: $wire.{{ $applyStateBindingModifiers("entangle('" . $statePath . "')") }},
                 init() {
-                    // Seed the input with the current state so mdtimepicker parses it on init.
+                    // Seed input value so the plugin parses the current state on init.
                     if (this.state) {
                         $refs.timePicker.value = this.state;
                     }
 
-                    mdtimepicker($refs.timePicker, {
+                    // Initialize the jQuery plugin (binds click → opens clock modal).
+                    $($refs.timePicker).mdtimepicker({
                         okLabel: '{{ $getOkLabel() }}',
                         cancelLabel: '{{ $getCancelLabel() }}',
                         format: '{{ $getFormat() }}',
@@ -30,12 +31,12 @@
                         is24hour: {{ $getIs24hour() ? 'true' : 'false' }},
                     });
 
-                    // Push picked time back to Livewire state on change.
+                    // Sync picker → Livewire state on user pick.
                     $($refs.timePicker).on('timechanged', (e) => {
-                        this.state = e.target.value;
+                        this.state = $refs.timePicker.value;
                     });
 
-                    // Re-render display when Livewire state changes externally (e.g. editForm->fill).
+                    // Sync Livewire state → input when refilled externally (edit modal).
                     this.$watch('state', (val) => {
                         if (val !== $refs.timePicker.value) {
                             $refs.timePicker.value = val ?? '';
