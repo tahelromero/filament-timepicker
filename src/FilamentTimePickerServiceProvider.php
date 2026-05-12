@@ -2,15 +2,14 @@
 
 namespace HusamTariq\FilamentTimePicker;
 
-use Filament\PluginServiceProvider;
+use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class FilamentTimePickerServiceProvider extends PluginServiceProvider
+class FilamentTimePickerServiceProvider extends PackageServiceProvider
 {
-    protected array $styles = [
-        'timepicker.min' => __DIR__ . '/../public/dist/timepicker.min.css'
-    ];
-
     public function configurePackage(Package $package): void
     {
         $package
@@ -19,11 +18,12 @@ class FilamentTimePickerServiceProvider extends PluginServiceProvider
             ->hasConfigFile();
     }
 
-    protected function getBeforeCoreScripts(): array
+    public function packageBooted(): void
     {
-        return [
-            'jquery.min' => config('filament-timepicker.jquery_min', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'),
-            'timepicker' => __DIR__ . '/../public/dist/timepicker.js',
-        ];
+        FilamentAsset::register([
+            Css::make('filament-timepicker-styles', __DIR__.'/../public/dist/timepicker.min.css'),
+            Js::make('filament-timepicker-jquery', config('filament-timepicker.jquery_min', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js')),
+            Js::make('filament-timepicker-scripts', __DIR__.'/../public/dist/timepicker.js'),
+        ], package: 'husam-tariq/filament-timepicker');
     }
 }
