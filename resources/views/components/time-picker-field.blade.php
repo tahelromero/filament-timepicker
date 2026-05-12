@@ -1,6 +1,13 @@
 @php
     $statePath = $getStatePath();
     $isDisabled = $isDisabled();
+    $config = json_encode([
+        'okLabel' => $getOkLabel(),
+        'cancelLabel' => $getCancelLabel(),
+        'format' => $getFormat(),
+        'timeFormat' => $getFormat(),
+        'is24hour' => $getIs24hour(),
+    ]);
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -16,30 +23,35 @@
             placeholder="--:--"
             x-data="{
                 state: $wire.{{ $applyStateBindingModifiers("entangle('" . $statePath . "')") }},
-                init() {
-                    // Seed input value so the plugin parses the current state on init.
-                    if (this.state) {
-                        $refs.timePicker.value = this.state;
-                    }
+                pluginConfig: {{ $config }},
+                bootPlugin() {
+                    const $input = $($refs.timePicker);
+                    // Seed input with current state BEFORE init so the plugin parses it.
+                    $refs.timePicker.value = this.state ?? '';
+                    $input.mdtimepicker(this.pluginConfig);
 
-                    // Initialize the jQuery plugin (binds click → opens clock modal).
-                    $($refs.timePicker).mdtimepicker({
-                        okLabel: '{{ $getOkLabel() }}',
-                        cancelLabel: '{{ $getCancelLabel() }}',
-                        format: '{{ $getFormat() }}',
-                        timeFormat: '{{ $getFormat() }}',
-                        is24hour: {{ $getIs24hour() ? 'true' : 'false' }},
-                    });
-
-                    // Sync picker → Livewire state on user pick.
-                    $($refs.timePicker).on('timechanged', (e) => {
+                    // Sync picker → Livewire on user pick.
+                    $input.on('timechanged', () => {
                         this.state = $refs.timePicker.value;
                     });
+                },
+                resetPlugin() {
+                    const $input = $($refs.timePicker);
+                    // Tear down and re-init so the picker reflects the new value.
+                    try { $input.mdtimepicker('destroy'); } catch (e) {}
+                    $refs.timePicker.value = this.state ?? '';
+                    $input.mdtimepicker(this.pluginConfig);
+                    $input.on('timechanged', () => {
+                        this.state = $refs.timePicker.value;
+                    });
+                },
+                init() {
+                    this.bootPlugin();
 
-                    // Sync Livewire state → input when refilled externally (edit modal).
+                    // Re-init plugin if state changes externally (edit modal refill).
                     this.$watch('state', (val) => {
-                        if (val !== $refs.timePicker.value) {
-                            $refs.timePicker.value = val ?? '';
+                        if ((val ?? '') !== $refs.timePicker.value) {
+                            this.resetPlugin();
                         }
                     });
                 },
