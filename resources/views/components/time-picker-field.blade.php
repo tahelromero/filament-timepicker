@@ -7,17 +7,21 @@
     <x-filament::input.wrapper
         :disabled="$isDisabled"
         :valid="! $errors->has($statePath)"
+        suffix-icon="heroicon-m-clock"
     >
         <input
             x-ref="timePicker"
             type="text"
             {{ $isDisabled ? 'disabled' : '' }}
-            placeholder="--:-- ----"
+            placeholder="--:--"
             x-data="mdtimepicker($refs.timePicker, {
                 state: $wire.{{ $applyStateBindingModifiers("entangle('" . $statePath . "')") }},
                 config: {
                     okLabel: '{{ $getOkLabel() }}',
                     cancelLabel: '{{ $getCancelLabel() }}',
+                    format: '{{ $getFormat() }}',
+                    timeFormat: '{{ $getFormat() }}',
+                    is24hour: {{ $getIs24hour() ? 'true' : 'false' }},
                 },
             })"
             x-init="init()"
