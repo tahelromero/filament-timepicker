@@ -21,9 +21,12 @@ class FilamentTimePickerServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         FilamentAsset::register([
-            Css::make('filament-timepicker-styles', __DIR__.'/../public/dist/timepicker.min.css'),
-            Js::make('filament-timepicker-jquery', config('filament-timepicker.jquery_min', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js')),
-            Js::make('filament-timepicker-scripts', __DIR__.'/../public/dist/timepicker.js'),
+            Css::make('filament-timepicker-styles', __DIR__.'/../public/dist/timepicker.min.css')
+                ->loadedOnRequest(),
+            Js::make('filament-timepicker-jquery', config('filament-timepicker.jquery_min', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'))
+                ->loadedOnRequest(),
+            Js::make('filament-timepicker-scripts', __DIR__.'/../public/dist/timepicker.js')
+                ->loadedOnRequest(),
         ], package: 'husam-tariq/filament-timepicker');
     }
 }
