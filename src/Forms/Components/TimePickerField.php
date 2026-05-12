@@ -12,9 +12,9 @@ class TimePickerField extends Field
 
     protected string $cancelLabel = 'Cancel';
 
-    protected string $format = 'HH:mm';
+    protected string $format = 'h:mm tt';
 
-    protected bool $is24hour = true;
+    protected bool $is24hour = false;
 
     public function cancelLabel(string $cancelLabel): static
     {
